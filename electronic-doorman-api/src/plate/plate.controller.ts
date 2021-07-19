@@ -10,7 +10,7 @@ export class PlateController {
   constructor(private readonly _service: PlateService) {}
 
   @Post()
-  @UseInterceptors(FileInterceptor('plate'))
+  @UseInterceptors(FileInterceptor('file'))
   async getPlateOwner(
     @UploadedFile() file: Express.Multer.File,
     @Res() res,

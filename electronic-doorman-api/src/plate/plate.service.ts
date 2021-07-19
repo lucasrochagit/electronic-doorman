@@ -12,22 +12,16 @@ export class PlateService {
   ) {}
 
   async getPlateOwner(file: Express.Multer.File): Promise<string> {
-    try {
-      if (!file || !file.buffer) {
-        throw new BadRequestException(
-          'You should need to update a plate photo!',
-        );
-      }
-      const plate: string = await this._repository.getPlate(file.buffer);
-      if (!plate) {
-        throw new BadRequestException('Could not get the plate info.');
-      }
-      const plateOwner: UserModel = await this._userService.findOne({ plate });
-      plateOwner.lastEntrance = new Date();
-      await this._userService.update(plateOwner.id, plateOwner);
-      return plateOwner.name;
-    } catch (e) {
-      throw e;
+    if (!file || !file.buffer) {
+      throw new BadRequestException('You should need to update a plate photo!');
     }
+    const plate: string = await this._repository.getPlate(file.buffer);
+    if (!plate) {
+      throw new BadRequestException('Could not get the plate info.');
+    }
+    const plateOwner: UserModel = await this._userService.findOne({ plate });
+    plateOwner.lastEntrance = new Date();
+    await this._userService.update(plateOwner.id, plateOwner);
+    return plateOwner.name;
   }
 }

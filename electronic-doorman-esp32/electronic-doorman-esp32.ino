@@ -20,13 +20,13 @@ const char* ssid = WIFI_SSID;
 const char* password = WIFI_PASS;
 
 String serverName = SERVER_HOST;
-String serverPath = "/files";   
+String serverPath = "/plates";   
 
 const int serverPort = SERVER_PORT;
 
 WiFiClient client;
 
-const int timerInterval = 30000;    
+const int timerInterval = 10000;    
 unsigned long previousMillis = 0;   
 
 void setup() {
@@ -129,9 +129,9 @@ String sendPhoto() {
     uint32_t totalLen = imageLen + extraLen;
   
     client.println("POST " + serverPath + " HTTP/1.1");
-    client.println("Host: " + serverName);
-    client.println("Content-Length: " + String(totalLen));
+    client.println("Host: " + serverName + ":" + String(serverPort));
     client.println("Content-Type: multipart/form-data; boundary=ElectronicDoorman");
+    client.println("Content-Length: " + String(totalLen));
     client.println();
     client.print(head);
   

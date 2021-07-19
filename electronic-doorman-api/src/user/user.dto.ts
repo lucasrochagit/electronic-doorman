@@ -22,8 +22,9 @@ export class UserDTO {
 
   @IsNotEmpty()
   @IsString()
-  @Matches(/[A-Z]{3}[0-9][0-9A-Z][0-9]{2}/, {
-    message: 'name must contain only letters and space',
+  @Matches(/[a-z]{3}[0-9][0-9a-z][0-9]{2}/, {
+    message:
+      'plate must contain only lowercase letters and numbers. examples: aaa-1234, aaa-12b4',
   })
   plate: string;
 
