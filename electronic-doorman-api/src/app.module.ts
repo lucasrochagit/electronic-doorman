@@ -11,7 +11,7 @@ import { PlateModule } from './plate/plate.module';
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'sqlite',
-      database: `.database/electronic_doorman_db`,
+      database: `.database/electronic_doorman_db.db`,
       autoLoadEntities: true,
       synchronize: true,
     }),
