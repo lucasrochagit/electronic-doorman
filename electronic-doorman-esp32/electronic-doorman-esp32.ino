@@ -1,37 +1,6 @@
-//#include <ESP32Servo.h>
-//
-//Servo myservo; 
-//
-//int pos = 0;
-//int servoPin = 13;
-//
-//void setup() {
-//  // put your setup code here, to run once:
-//  ESP32PWM::allocateTimer(0);
-//  ESP32PWM::allocateTimer(1);
-//  ESP32PWM::allocateTimer(2);
-//  ESP32PWM::allocateTimer(3);
-//  myservo.setPeriodHertz(50);  
-//  myservo.attach(servoPin, 500, 2400); 
-//
-//}
-//
-//void loop() {
-//  // put your main code here, to run repeatedly:
-//  for (pos = 0; pos <= 180; pos += 1) {     
-//    myservo.write(pos);    
-//    delay(15);             
-//  }
-//  for (pos = 180; pos >= 0; pos -= 1) {
-//    myservo.write(pos);    
-//    delay(15);             
-//  }
-//
-//}
-
 /*
-  Adapted from Rui Santos Project
-  Complete project details at https://RandomNerdTutorials.com/esp32-cam-post-image-photo-server/
+  Adaptad from Rui Santos Project.
+  Complete project reference details at https://RandomNerdTutorials.com/esp32-cam-post-image-photo-server/
   
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files.
@@ -50,20 +19,35 @@
 const char* ssid = WIFI_SSID;
 const char* password = WIFI_PASS;
 
-String serverName = SERVER_HOST;   
-String serverPath = "/plates";   
-const int serverPort = 80;
+String serverName = SERVER_HOST;
+String serverPath = "/files";   
+
+const int serverPort = SERVER_PORT;
 
 WiFiClient client;
-#define CAMERA_MODEL_AI_THINKER
 
-const int timerInterval = 10000;  
-unsigned long previousMillis = 0; 
+const int timerInterval = 30000;    
+unsigned long previousMillis = 0;   
 
 void setup() {
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); 
   Serial.begin(115200);
 
+  configureWifi();
+  configureCamera();
+
+  sendPhoto(); 
+}
+
+void loop() {
+  unsigned long currentMillis = millis();
+  if (currentMillis - previousMillis >= timerInterval) {
+    sendPhoto();
+    previousMillis = currentMillis;
+  }
+}
+
+void configureWifi() {
   WiFi.mode(WIFI_STA);
   Serial.println();
   Serial.print("Connecting to ");
@@ -76,7 +60,9 @@ void setup() {
   Serial.println();
   Serial.print("ESP32-CAM IP Address: ");
   Serial.println(WiFi.localIP());
+}
 
+void configureCamera() {
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
   config.ledc_timer = LEDC_TIMER_0;
@@ -117,16 +103,6 @@ void setup() {
     delay(1000);
     ESP.restart();
   }
-
-  sendPhoto(); 
-}
-
-void loop() {
-  unsigned long currentMillis = millis();
-  if (currentMillis - previousMillis >= timerInterval) {
-    sendPhoto();
-    previousMillis = currentMillis;
-  }
 }
 
 String sendPhoto() {
@@ -145,17 +121,17 @@ String sendPhoto() {
 
   if (client.connect(serverName.c_str(), serverPort)) {
     Serial.println("Connection successful!");    
-    String head = "--w3vHKYg5n4Nubr0RXSzs\r\nContent-Disposition: form-data; name=\"plate\"; filename=\"plate.jpg\"\r\nContent-Type: image/jpeg\r\n\r\n";
-    String tail = "\r\n--w3vHKYg5n4Nubr0RXSzs\r\n";
+    String head = "--ElectronicDoorman\r\nContent-Disposition: form-data; name=\"file\"; filename=\"plate.jpg\"\r\nContent-Type: image/jpeg\r\n\r\n";
+    String tail = "\r\n--ElectronicDoorman--\r\n";
 
-    uint16_t imageLen = fb->len;
-    uint16_t extraLen = head.length() + tail.length();
-    uint16_t totalLen = imageLen + extraLen;
+    uint32_t imageLen = fb->len;
+    uint32_t extraLen = head.length() + tail.length();
+    uint32_t totalLen = imageLen + extraLen;
   
     client.println("POST " + serverPath + " HTTP/1.1");
     client.println("Host: " + serverName);
     client.println("Content-Length: " + String(totalLen));
-    client.println("Content-Type: multipart/form-data; boundary=--w3vHKYg5n4Nubr0RXSzs");
+    client.println("Content-Type: multipart/form-data; boundary=ElectronicDoorman");
     client.println();
     client.print(head);
   
@@ -194,7 +170,7 @@ String sendPhoto() {
       }
       if (getBody.length()>0) { break; }
     }
-    Serial.println  ();
+    Serial.println();
     client.stop();
     Serial.println(getBody);
   }
